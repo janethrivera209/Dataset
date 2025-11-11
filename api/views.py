@@ -10,30 +10,24 @@ from sklearn.model_selection import train_test_split
 from django.conf import settings
 import arff
 
-# --- Cargar dataset ---
 def load_kdd_dataset():
     try:
-        # datasets está al mismo nivel que dataset_project/
         data_path = settings.BASE_DIR / "datasets" / "KDDTrain+.arff"
         with open(data_path, 'r') as file:
-            dataset = arff.load(file)  # liac-arff usa .load()
+            dataset = arff.load(file)
             attributes = [attr[0] for attr in dataset["attributes"]]
             df = pd.DataFrame(dataset["data"], columns=attributes)
         return df, None
     except Exception as e:
         return None, str(e)
 
-# --- Generar gráficas ---
 def generate_plots(df):
-    # Asegurarse que las columnas categóricas sean strings
     if isinstance(df['protocol_type'].iloc[0], bytes):
         df['protocol_type'] = df['protocol_type'].apply(lambda x: x.decode() if isinstance(x, bytes) else x)
 
-    # Dividir en train / val / test
     train, test = train_test_split(df, test_size=0.4, random_state=42, stratify=df['protocol_type'])
     val, test = train_test_split(test, test_size=0.5, random_state=42, stratify=test['protocol_type'])
 
-    # Crear gráficas
     figs = []
     for data, title in [
         (df, "Dataset completo"),
@@ -48,7 +42,6 @@ def generate_plots(df):
         ax.set_ylabel('Frecuencia')
         plt.tight_layout()
 
-        # Convertir gráfico a base64
         buffer = io.BytesIO()
         plt.savefig(buffer, format='png')
         buffer.seek(0)
@@ -57,13 +50,28 @@ def generate_plots(df):
         figs.append(graphic)
         plt.close(fig)
 
-    return figs
+    # Retornar también tamaños de conjuntos y distribución de protocolos
+    sizes = {
+        "total": len(df),
+        "train": len(train),
+        "val": len(val),
+        "test": len(test)
+    }
+    protocol_counts = df['protocol_type'].value_counts().to_dict()
 
-# --- Vista principal ---
+    return figs, sizes, protocol_counts
+
 def index(request):
     df, error = load_kdd_dataset()
     if error:
-        return render(request, "index.html", {"error": error, "charts": []})
+        return render(request, "index.html", {"error": error, "charts": [], "sizes": {}, "protocol_counts": {}})
 
-    charts = generate_plots(df)
-    return render(request, "index.html", {"charts": charts, "error": None})
+    charts, sizes, protocol_counts = generate_plots(df)
+
+    context = {
+        "charts": charts,
+        "sizes": sizes,
+        "protocol_counts": protocol_counts,
+        "error": None
+    }
+    return render(request, "index.html", context)
