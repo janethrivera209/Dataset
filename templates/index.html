@@ -149,6 +149,7 @@
     <button id="show-btn" class="btn shadow">Mostrar Dataset</button>
 
     <div id="dataset-section" class="dataset-section">
+      <!-- Información general -->
       <div class="row g-4">
         <div class="col-md-6">
           <div class="card-info">
@@ -170,6 +171,7 @@
         </div>
       </div>
 
+      <!-- Distribución de Protocol Types -->
       <div class="mt-5">
         <div class="card-info">
           <h5>Distribución de Protocol Types</h5>
@@ -191,9 +193,17 @@
         </div>
       </div>
 
+      <!-- Mensaje de error -->
+      {% if error %}
+      <div class="alert alert-danger mt-4">
+        <strong>Error:</strong> {{ error }}
+      </div>
+      {% endif %}
+
+      <!-- Gráficas -->
       <div class="mt-5">
         <div class="card-info">
-          <h5>Graficas</h5>
+          <h5>Gráficas</h5>
           <div class="chart-container mt-3">
             {% for chart in charts %}
             <div class="chart-card">
@@ -216,7 +226,5 @@
   </script>
 </body>
 </html>
-
-
 
 

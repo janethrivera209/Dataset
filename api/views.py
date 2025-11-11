@@ -1,31 +1,37 @@
 import io
 import base64
 import matplotlib
-matplotlib.use('Agg')  # Usar backend sin GUI
+matplotlib.use('Agg')  # <-- necesario para servidores sin GUI
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from pathlib import Path
 from django.shortcuts import render
 from sklearn.model_selection import train_test_split
 import arff
-from pathlib import Path
+from django.conf import settings
 
-# Ruta del dataset
-DATA_PATH = Path(__file__).resolve().parent.parent / "datasets" / "KDDTrain+.arff"
+# --- Ruta del dataset ---
+DATA_PATH = Path(settings.BASE_DIR) / "datasets" / "KDDTrain+.arff"
 
 # --- Cargar dataset ---
 def load_kdd_dataset():
+    if not DATA_PATH.exists():
+        raise FileNotFoundError(f"No se encontró el dataset en: {DATA_PATH}")
+
     with open(DATA_PATH, 'r') as file:
         dataset = arff.load(file)
         attributes = [attr[0] for attr in dataset["attributes"]]
         df = pd.DataFrame(dataset["data"], columns=attributes)
+
+    # Convertir columnas categóricas de bytes a string
+    for col in df.select_dtypes([bytes]).columns:
+        df[col] = df[col].apply(lambda x: x.decode() if isinstance(x, bytes) else x)
+
     return df
 
 # --- Generar gráficas ---
 def generate_plots(df):
-    if isinstance(df['protocol_type'].iloc[0], bytes):
-        df['protocol_type'] = df['protocol_type'].apply(lambda x: x.decode() if isinstance(x, bytes) else x)
-
     train, test = train_test_split(df, test_size=0.4, random_state=42, stratify=df['protocol_type'])
     val, test = train_test_split(test, test_size=0.5, random_state=42, stratify=test['protocol_type'])
 
@@ -48,13 +54,19 @@ def generate_plots(df):
         buffer.seek(0)
         graphic = base64.b64encode(buffer.getvalue()).decode('utf-8')
         buffer.close()
-        figs.append(graphic)
         plt.close(fig)
+        figs.append(graphic)
 
     return figs
 
 # --- Vista principal ---
 def index(request):
-    df = load_kdd_dataset()
-    charts = generate_plots(df)
+    try:
+        df = load_kdd_dataset()
+        charts = generate_plots(df)
+    except Exception as e:
+        charts = []
+        error = str(e)
+        return render(request, "index.html", {"charts": charts, "error": error})
+
     return render(request, "index.html", {"charts": charts})
