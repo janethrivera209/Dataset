@@ -27,7 +27,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-default')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['tu-app.onrender.com', 'localhost']
+ALLOWED_HOSTS = ['dataset-lhya.onrender.com', 'localhost']
+
 
 
 
