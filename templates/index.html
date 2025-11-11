@@ -92,12 +92,6 @@
       height: auto;
       border-radius: 10px;
     }
-
-    @media (max-width: 768px) {
-      .card-info {
-        padding: 20px;
-      }
-    }
   </style>
 </head>
 
@@ -108,58 +102,71 @@
 
   <div class="container-content">
     {% if error %}
-      <div class="alert alert-danger">{{ error }}</div>
-    {% endif %}
-
-    <!-- Información del Dataset -->
-    <div class="card-info">
-      <h5>Información del Dataset</h5>
-      <p><strong>Total de instancias:</strong> {{ sizes.total }}</p>
-      <p><strong>Características (columnas):</strong> 42</p>
-      <p><strong>Columna de estratificación:</strong> protocol_type</p>
-    </div>
-
-    <!-- Tamaños de los conjuntos -->
-    <div class="card-info">
-      <h5>Tamaños de los Conjuntos</h5>
-      <p><strong>Training Set:</strong> {{ sizes.train }} ({{ (sizes.train|floatformat:2) |divisibleby:sizes.total|floatformat:0 }}%)</p>
-      <p><strong>Validation Set:</strong> {{ sizes.val }} ({{ (sizes.val|floatformat:2) |divisibleby:sizes.total|floatformat:0 }}%)</p>
-      <p><strong>Test Set:</strong> {{ sizes.test }} ({{ (sizes.test|floatformat:2) |divisibleby:sizes.total|floatformat:0 }}%)</p>
-      <p><strong>Total:</strong> {{ sizes.total }}</p>
-    </div>
-
-    <!-- Distribución de Protocol Types -->
-    <div class="card-info">
-      <h5>Distribución de Protocol Types</h5>
-      <div class="table-responsive">
-        <table class="table table-bordered mt-3">
-          <thead>
-            <tr>
-              <th>Protocolo</th>
-              <th>Frecuencia</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for proto, count in protocol_counts.items %}
-              <tr><td>{{ proto }}</td><td>{{ count }}</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      <div class="alert alert-danger">
+        <strong>Error:</strong> {{ error }}
       </div>
-    </div>
-
-    <!-- Gráficas -->
-    <div class="card-info">
-      <h5>Gráficas</h5>
-      <div class="chart-container mt-3">
-        {% for chart in charts %}
-        <div class="chart-card">
-          <img src="data:image/png;base64,{{ chart }}" alt="Gráfico" />
+    {% else %}
+      <div class="row g-4">
+        <!-- Información del Dataset -->
+        <div class="col-md-6">
+          <div class="card-info">
+            <h5>Información del Dataset</h5>
+            <p><strong>Total de instancias:</strong> {{ sizes.total }}</p>
+            <p><strong>Características (columnas):</strong> 42</p>
+            <p><strong>Columna de estratificación:</strong> protocol_type</p>
+          </div>
         </div>
-        {% endfor %}
+
+        <!-- Tamaños de los conjuntos -->
+        <div class="col-md-6">
+          <div class="card-info">
+            <h5>Tamaños de los Conjuntos</h5>
+            <p><strong>Training Set:</strong> {{ sizes.train }} (60%)</p>
+            <p><strong>Validation Set:</strong> {{ sizes.val }} (20%)</p>
+            <p><strong>Test Set:</strong> {{ sizes.test }} (20%)</p>
+            <p><strong>Total:</strong> {{ sizes.total }}</p>
+          </div>
+        </div>
       </div>
-    </div>
+
+      <!-- Distribución de Protocol Types -->
+      <div class="mt-5">
+        <div class="card-info">
+          <h5>Distribución de Protocol Types</h5>
+          <div class="table-responsive">
+            <table class="table table-bordered mt-3">
+              <thead>
+                <tr>
+                  <th>Protocolo</th>
+                  <th>Frecuencia</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for protocol, freq in protocol_counts.items %}
+                  <tr><td>{{ protocol }}</td><td>{{ freq }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráficas -->
+      <div class="mt-5">
+        <div class="card-info">
+          <h5>Gráficas</h5>
+          <div class="chart-container mt-3">
+            {% for chart in charts %}
+            <div class="chart-card">
+              <img src="data:image/png;base64,{{ chart }}" alt="Gráfico" />
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
   </div>
 </body>
 </html>
+
 
