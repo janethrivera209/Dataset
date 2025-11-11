@@ -1,14 +1,20 @@
 import io
+import os
 import base64
+import matplotlib
+
+matplotlib.use('Agg')  # <-- Agrega esto **antes** de importar pyplot
+
 import matplotlib.pyplot as plt
 import pandas as pd
 from django.shortcuts import render
 from sklearn.model_selection import train_test_split
-import arff  
+import arff
+
 
 # --- Cargar dataset ---
 def load_kdd_dataset():
-    data_path = "/home/janeth/Simulacion/datasets/datasets/NSL-KDD/KDDTrain+.arff"
+    data_path = os.path.join(BASE_DIR, "static", "datasets", "KDDTrain+.arff")
     with open(data_path, 'r') as file:
         dataset = arff.load(file)  # ✅ liac-arff usa .load() en lugar de .loadarff()
         attributes = [attr[0] for attr in dataset["attributes"]]
