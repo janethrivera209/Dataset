@@ -1,36 +1,34 @@
 import io
-import os
 import base64
 import matplotlib
-
-matplotlib.use('Agg')  # <-- Agrega esto **antes** de importar pyplot
+matplotlib.use('Agg')  # Usar backend sin GUI
 
 import matplotlib.pyplot as plt
 import pandas as pd
 from django.shortcuts import render
 from sklearn.model_selection import train_test_split
 import arff
+from pathlib import Path
 
+# Ruta del dataset
+DATA_PATH = Path(__file__).resolve().parent.parent / "datasets" / "KDDTrain+.arff"
 
 # --- Cargar dataset ---
 def load_kdd_dataset():
-    data_path = os.path.join(BASE_DIR, "static", "datasets", "KDDTrain+.arff")
-    with open(data_path, 'r') as file:
-        dataset = arff.load(file)  # ✅ liac-arff usa .load() en lugar de .loadarff()
+    with open(DATA_PATH, 'r') as file:
+        dataset = arff.load(file)
         attributes = [attr[0] for attr in dataset["attributes"]]
         df = pd.DataFrame(dataset["data"], columns=attributes)
     return df
 
 # --- Generar gráficas ---
 def generate_plots(df):
-    # Asegurarte de que las columnas categóricas sean strings
     if isinstance(df['protocol_type'].iloc[0], bytes):
         df['protocol_type'] = df['protocol_type'].apply(lambda x: x.decode() if isinstance(x, bytes) else x)
 
     train, test = train_test_split(df, test_size=0.4, random_state=42, stratify=df['protocol_type'])
     val, test = train_test_split(test, test_size=0.5, random_state=42, stratify=test['protocol_type'])
 
-    # Graficar los tres conjuntos
     figs = []
     for data, title in [
         (df, "Dataset completo"),
@@ -45,7 +43,6 @@ def generate_plots(df):
         ax.set_ylabel('Frecuencia')
         plt.tight_layout()
 
-        # Convertir gráfico a base64
         buffer = io.BytesIO()
         plt.savefig(buffer, format='png')
         buffer.seek(0)
